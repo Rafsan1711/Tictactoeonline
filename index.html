@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online Tic Tac Toe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans text-center">
+  <div id="auth" class="p-6">
+    <h1 class="text-3xl font-bold mb-4">Online Tic Tac Toe</h1>
+    <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-700 text-white px-6 py-2 rounded text-lg">Sign in with Google</button>
+  </div>
+
+  <div id="user-info" class="hidden p-4">
+    <h2 class="text-xl" id="username"></h2>
+    <p id="rating" class="text-sm text-gray-300">Rating: ...</p>
+    <button onclick="findMatch()" class="mt-4 bg-green-600 hover:bg-green-800 px-6 py-2 rounded">Play Online</button>
+  </div>
+
+  <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+    <div class="bg-gray-800 p-6 rounded shadow-xl text-white">
+      <p class="text-xl mb-2" id="modal-text">Waiting for other player...</p>
+    </div>
+  </div>
+
+  <div id="game" class="hidden p-4">
+    <h2 class="text-2xl mb-2">Tic Tac Toe</h2>
+    <p id="turn" class="mb-2"></p>
+    <div class="grid grid-cols-3 gap-2 w-64 mx-auto">
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="0"></div>
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="1"></div>
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="2"></div>
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="3"></div>
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="4"></div>
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="5"></div>
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="6"></div>
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="7"></div>
+      <div class="cell w-20 h-20 text-3xl flex items-center justify-center bg-gray-700 rounded cursor-pointer" data-index="8"></div>
+    </div>
+    <p class="mt-4 text-lg" id="result"></p>
+  </div>
+
+  <script>
+    // 🚀 YOUR FIREBASE CONFIGURATION HERE
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    let currentUser = null;
+    let currentGameId = null;
+    let symbol = null;
+
+    function signIn() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider);
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('auth').classList.add('hidden');
+        document.getElementById('user-info').classList.remove('hidden');
+        document.getElementById('username').textContent = user.displayName;
+        loadRating();
+      }
+    });
+
+    function loadRating() {
+      const uid = currentUser.uid;
+      db.ref(`users/${uid}/rating`).once('value', snap => {
+        const rating = snap.val() || 1000;
+        document.getElementById('rating').textContent = `Rating: ${rating}`;
+        db.ref(`users/${uid}/rating`).set(rating); // Ensure it's saved
+      });
+    }
+
+    function findMatch() {
+      document.getElementById('modal').classList.remove('hidden');
+      db.ref('matchQueue').once('value', snap => {
+        const queue = snap.val();
+        if (!queue) {
+          db.ref('matchQueue').set(currentUser.uid);
+        } else if (queue !== currentUser.uid) {
+          const gameId = Date.now();
+          currentGameId = gameId;
+          db.ref('games/' + gameId).set({
+            board: Array(9).fill(''),
+            turn: 'X',
+            playerX: queue,
+            playerO: currentUser.uid,
+            result: null
+          });
+          db.ref('matchQueue').remove();
+        }
+      });
+
+      db.ref('games').on('child_added', snap => {
+        const game = snap.val();
+        const id = snap.key;
+        if ((game.playerX === currentUser.uid || game.playerO === currentUser.uid) && !currentGameId) {
+          currentGameId = id;
+          symbol = game.playerX === currentUser.uid ? 'X' : 'O';
+          startGameListener();
+          document.getElementById('modal').classList.add('hidden');
+          document.getElementById('game').classList.remove('hidden');
+        }
+      });
+    }
+
+    function startGameListener() {
+      db.ref('games/' + currentGameId).on('value', snap => {
+        const game = snap.val();
+        if (!game) return;
+        document.getElementById('turn').textContent = (game.turn === symbol) ? "Your turn" : "Opponent's turn";
+
+        document.querySelectorAll('.cell').forEach((cell, idx) => {
+          cell.textContent = game.board[idx];
+          cell.onclick = () => {
+            if (game.board[idx] === '' && game.turn === symbol && !game.result) {
+              game.board[idx] = symbol;
+              const nextTurn = symbol === 'X' ? 'O' : 'X';
+              const winner = checkWinner(game.board);
+              db.ref('games/' + currentGameId).update({
+                board: game.board,
+                turn: nextTurn,
+                result: winner
+              });
+
+              if (winner) handleGameEnd(winner, game);
+            }
+          };
+        });
+
+        if (game.result) {
+          document.getElementById('result').textContent = (game.result === symbol) ? "You Win!" :
+            (game.result === 'Draw') ? "It's a draw!" : "You Lose!";
+        }
+      });
+    }
+
+    function handleGameEnd(result, game) {
+      const user = currentUser;
+      const me = user.uid;
+      const opp = (game.playerX === me) ? game.playerO : game.playerX;
+
+      if (result === symbol) {
+        updateRating(me, 12);
+        updateRating(opp, -4);
+      } else if (result !== 'Draw') {
+        updateRating(me, -4);
+        updateRating(opp, 12);
+      }
+    }
+
+    function updateRating(uid, delta) {
+      const ref = db.ref(`users/${uid}/rating`);
+      ref.transaction(rating => (rating || 1000) + delta);
+    }
+
+    function checkWinner(b) {
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      for (const [a,b1,c] of wins) {
+        if (b[a] && b[a] === b[b1] && b[a] === b[c]) return b[a];
+      }
+      return b.includes('') ? null : 'Draw';
+    }
+  </script>
+</body>
+      </html>
