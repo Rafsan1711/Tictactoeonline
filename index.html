@@ -82,7 +82,7 @@
     function loadRating() {
       const uid = currentUser.uid;
       db.ref(`users/${uid}/rating`).once('value', snap => {
-        const rating = snap.val() || 1000;
+        const rating = snap.val() || 50;
         document.getElementById('rating').textContent = `Rating: ${rating}`;
         db.ref(`users/${uid}/rating`).set(rating); // Ensure it's saved
       });
