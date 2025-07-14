@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,54 +9,64 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col">  <!-- Screens -->  <!-- Auth Screen -->  <div id="auth-screen" class="flex-grow flex flex-col items-center justify-center">
+<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col">
+
+  <!-- Screens -->
+  <!-- Auth Screen -->
+  <div id="auth-screen" class="flex-grow flex flex-col items-center justify-center">
     <h1 class="text-4xl font-bold mb-6">Tic Tac Toe Online</h1>
     <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded">Sign in with Google</button>
-  </div>  <!-- Main Container -->  <div id="app" class="hidden flex-grow flex flex-col">
+  </div>
+
+  <!-- Main Container -->
+  <div id="app" class="hidden flex-grow flex flex-col">
     <!-- Top Bar -->
     <div class="p-4 flex justify-between items-center border-b border-gray-700">
       <div>
         <span id="username" class="font-semibold"></span>
         <span class="text-gray-400 ml-2">Rating: <span id="rating">0</span></span>
       </div>
-    </div><!-- Screens Container -->
-<div id="screens" class="flex-grow overflow-auto p-4">
-  <!-- Home Screen -->
-  <div id="screen-home" class="space-y-4">
-    <button onclick="startMatching()" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Play Online</button>
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
-      <div class="bg-gray-800 p-6 rounded shadow-lg text-center">
-        <p class="mb-4">Waiting for another player...</p>
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-white mx-auto"></div>
+    </div>
+
+    <!-- Screens Container -->
+    <div id="screens" class="flex-grow overflow-auto p-4">
+      <!-- Home Screen -->
+      <div id="screen-home" class="space-y-4">
+        <button onclick="startMatching()" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Play Online</button>
+        <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+          <div class="bg-gray-800 p-6 rounded shadow-lg text-center">
+            <p class="mb-4">Waiting for another player...</p>
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-white mx-auto"></div>
+          </div>
+        </div>
+        <div id="board" class="grid grid-cols-3 gap-2 mt-6 w-72 mx-auto hidden"></div>
+        <p id="game-status" class="text-xl mt-4 font-bold text-center"></p>
+      </div>
+
+      <!-- Leaderboard Screen -->
+      <div id="screen-leaderboard" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Leaderboard</h2>
+        <ul id="leaderboard-list" class="space-y-2">
+          <!-- Dynamic -->
+        </ul>
+      </div>
+
+      <!-- Settings Screen -->
+      <div id="screen-settings" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Settings</h2>
+        <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Sign Out</button>
       </div>
     </div>
-    <div id="board" class="grid grid-cols-3 gap-2 mt-6 w-72 mx-auto hidden"></div>
-    <p id="game-status" class="text-xl mt-4 font-bold text-center"></p>
+
+    <!-- Bottom Navigation -->
+    <div class="border-t border-gray-700 flex justify-around p-2">
+      <button onclick="showScreen('home')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">🏠<br>Home</button>
+      <button onclick="showScreen('leaderboard')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⭐<br>Leaderboard</button>
+      <button onclick="showScreen('settings')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⚙️<br>Settings</button>
+    </div>
   </div>
 
-  <!-- Leaderboard Screen -->
-  <div id="screen-leaderboard" class="hidden">
-    <h2 class="text-2xl font-bold mb-4">Leaderboard</h2>
-    <ul id="leaderboard-list" class="space-y-2">
-      <!-- Dynamic -->
-    </ul>
-  </div>
-
-  <!-- Settings Screen -->
-  <div id="screen-settings" class="hidden">
-    <h2 class="text-2xl font-bold mb-4">Settings</h2>
-    <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Sign Out</button>
-  </div>
-</div>
-
-<!-- Bottom Navigation -->
-<div class="border-t border-gray-700 flex justify-around p-2">
-  <button onclick="showScreen('home')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">🏠<br>Home</button>
-  <button onclick="showScreen('leaderboard')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⭐<br>Leaderboard</button>
-  <button onclick="showScreen('settings')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⚙️<br>Settings</button>
-</div>
-
-  </div>  <script>
+  <script>
     // TODO: Replace with your Firebase config
     const firebaseConfig = {
   apiKey: "AIzaSyBqC69KDh1LqCw1DnxP5KWLP302WImS18M",
@@ -224,5 +235,6 @@
       const code=new URLSearchParams(window.location.search).get('match');
       if(code) startMatching();
     }
-  </script></body>
+  </script>
+</body>
   </html>
