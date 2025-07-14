@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,66 +8,56 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col">
-
-  <!-- Screens -->
-  <!-- Auth Screen -->
-  <div id="auth-screen" class="flex-grow flex flex-col items-center justify-center">
+<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col">  <!-- Auth Screen -->  <div id="auth-screen" class="flex-grow flex flex-col items-center justify-center">
     <h1 class="text-4xl font-bold mb-6">Tic Tac Toe Online</h1>
     <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded">Sign in with Google</button>
-  </div>
-
-  <!-- Main Container -->
-  <div id="app" class="hidden flex-grow flex flex-col">
+  </div>  <!-- Main App -->  <div id="app" class="hidden flex-grow flex flex-col">
     <!-- Top Bar -->
     <div class="p-4 flex justify-between items-center border-b border-gray-700">
       <div>
         <span id="username" class="font-semibold"></span>
         <span class="text-gray-400 ml-2">Rating: <span id="rating">0</span></span>
       </div>
-    </div>
-
-    <!-- Screens Container -->
-    <div id="screens" class="flex-grow overflow-auto p-4">
-      <!-- Home Screen -->
-      <div id="screen-home" class="space-y-4">
-        <button onclick="startMatching()" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Play Online</button>
-        <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
-          <div class="bg-gray-800 p-6 rounded shadow-lg text-center">
-            <p class="mb-4">Waiting for another player...</p>
-            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-white mx-auto"></div>
-          </div>
-        </div>
-        <div id="board" class="grid grid-cols-3 gap-2 mt-6 w-72 mx-auto hidden"></div>
-        <p id="game-status" class="text-xl mt-4 font-bold text-center"></p>
-      </div>
-
-      <!-- Leaderboard Screen -->
-      <div id="screen-leaderboard" class="hidden">
-        <h2 class="text-2xl font-bold mb-4">Leaderboard</h2>
-        <ul id="leaderboard-list" class="space-y-2">
-          <!-- Dynamic -->
-        </ul>
-      </div>
-
-      <!-- Settings Screen -->
-      <div id="screen-settings" class="hidden">
-        <h2 class="text-2xl font-bold mb-4">Settings</h2>
-        <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Sign Out</button>
+    </div><!-- Screens Container -->
+<div id="screens" class="flex-grow overflow-auto p-4">
+  <!-- Home Screen -->
+  <div id="screen-home" class="space-y-4">
+    <button onclick="startMatching()" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Play Online</button>
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+      <div class="bg-gray-800 p-6 rounded shadow-lg text-center">
+        <p class="mb-4">Waiting for another player...</p>
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-white mx-auto"></div>
       </div>
     </div>
+    <div id="board" class="grid grid-cols-3 gap-2 mt-6 w-72 mx-auto hidden"></div>
+    <p id="game-status" class="text-xl mt-4 font-bold text-center"></p>
+  </div>
 
-    <!-- Bottom Navigation -->
-    <div class="border-t border-gray-700 flex justify-around p-2">
-      <button onclick="showScreen('home')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">🏠<br>Home</button>
-      <button onclick="showScreen('leaderboard')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⭐<br>Leaderboard</button>
-      <button onclick="showScreen('settings')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⚙️<br>Settings</button>
+  <!-- Leaderboard Screen -->
+  <div id="screen-leaderboard" class="hidden">
+    <h2 class="text-2xl font-bold mb-4">Leaderboard</h2>
+    <div id="leaderboard-list" class="space-y-2">
+      <!-- Dynamic Cards -->
     </div>
   </div>
 
-  <script>
-    // TODO: Replace with your Firebase config
-    const firebaseConfig = {
+  <!-- Settings Screen -->
+  <div id="screen-settings" class="hidden">
+    <h2 class="text-2xl font-bold mb-4">Settings</h2>
+    <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Sign Out</button>
+  </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="border-t border-gray-700 flex justify-around p-2">
+  <button onclick="showScreen('home')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">🏠<br>Home</button>
+  <button onclick="showScreen('leaderboard')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⭐<br>Leaderboard</button>
+  <button onclick="showScreen('settings')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⚙️<br>Settings</button>
+</div>
+
+  </div><script>
+  // Firebase Config
+  const firebaseConfig = {
   apiKey: "AIzaSyBqC69KDh1LqCw1DnxP5KWLP302WImS18M",
   authDomain: "online-tic-tac-toe-726c2.firebaseapp.com",
   databaseURL: "https://online-tic-tac-toe-726c2-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -77,164 +66,150 @@
   messagingSenderId: "668299566909",
   appId: "1:668299566909:web:d28ff050a0932452e96f54"
 };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+  // UI
+  const authScreen = document.getElementById('auth-screen');
+  const app = document.getElementById('app');
+  const usernameEl = document.getElementById('username');
+  const ratingEl = document.getElementById('rating');
+  const boardEl = document.getElementById('board');
+  const gameStatus = document.getElementById('game-status');
+  const modal = document.getElementById('modal');
 
-    // UI Elements
-    const authScreen = document.getElementById('auth-screen');
-    const app = document.getElementById('app');
-    const usernameEl = document.getElementById('username');
-    const ratingEl = document.getElementById('rating');
-    const boardEl = document.getElementById('board');
-    const gameStatus = document.getElementById('game-status');
-    const modal = document.getElementById('modal');
+  let user, playerSymbol, gameId, turn, board = [];
 
-    let user, playerSymbol, gameId, turn, board = [];
+  // Auth Listener
+  auth.onAuthStateChanged(async u => {
+    if (u) {
+      user = u;
+      authScreen.classList.add('hidden');
+      app.classList.remove('hidden');
+      usernameEl.textContent = u.displayName;
+      const userRef = db.ref('users/' + u.uid);
+      const snap = await userRef.get();
+      let rating = snap.child('rating').exists() ? snap.child('rating').val() : 1000;
+      await userRef.update({ rating, displayName: u.displayName });
+      ratingEl.textContent = rating;
+      showScreen('home');
+      loadLeaderboard();
+    }
+  });
 
-    // Auth
-    auth.onAuthStateChanged(async u => {
-      if (u) {
-        user = u;
-        authScreen.classList.add('hidden');
-        app.classList.remove('hidden');
-        usernameEl.textContent = u.displayName;
-        const snap = await db.ref('users/' + u.uid + '/rating').get();
-        const rating = snap.exists() ? snap.val() : 1000;
-        ratingEl.textContent = rating;
-        await db.ref('users/' + u.uid + '/rating').set(rating);
-        showScreen('home');
-        loadLeaderboard();
-        handleDeepLink();
+  function signIn() {
+    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  }
+  function signOut() {
+    auth.signOut(); location.reload();
+  }
+
+  // Navigation
+  function showScreen(name) {
+    ['home','leaderboard','settings'].forEach(s => document.getElementById('screen-'+s).classList.add('hidden'));
+    document.getElementById('screen-'+name).classList.remove('hidden');
+  }
+
+  // Leaderboard
+  async function loadLeaderboard() {
+    const snap = await db.ref('users').orderByChild('rating').limitToLast(20).get();
+    const list = [];
+    snap.forEach(child => list.push({ uid: child.key, name: child.val().displayName || 'User', rating: child.val().rating }));
+    list.sort((a,b) => b.rating - a.rating);
+    const container = document.getElementById('leaderboard-list');
+    container.innerHTML = '';
+    list.forEach((u,i) => {
+      const card = document.createElement('div');
+      const bg = i===0 ? 'bg-yellow-500' : i===1 ? 'bg-gray-300 text-gray-900' : i===2 ? 'bg-yellow-700' : 'bg-gray-800';
+      card.className = `flex justify-between p-4 rounded ${bg}`;
+      card.innerHTML = `<span>#${i+1}</span><span>${u.name}</span><span>${u.rating}</span>`;
+      container.appendChild(card);
+    });
+  }
+
+  // Matchmaking using simple queue
+  async function startMatching() {
+    modal.classList.remove('hidden');
+    const queueRef = db.ref('matchQueue');
+    // Listen for pairing
+    queueRef.on('value', async snap => {
+      const arr = [];
+      snap.forEach(child => arr.push({ key: child.key, uid: child.val().uid }));
+      if (arr.length >= 2) {
+        const [p1, p2] = arr;
+        // remove both
+        await queueRef.child(p1.key).remove();
+        await queueRef.child(p2.key).remove();
+        const opponentUid = p1.uid === user.uid ? p2.uid : p1.uid;
+        initGame(generateMatchCode(), opponentUid);
       }
     });
+    // Join queue
+    await queueRef.push({ uid: user.uid });
+  }
 
-    function signIn() {
-      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-    }
-    function signOut() {
-      auth.signOut(); location.reload();
-    }
+  function generateMatchCode() {
+    return Math.floor(10000000 + Math.random()*90000000).toString();
+  }
 
-    // Navigation
-    function showScreen(name) {
-      ['home','leaderboard','settings'].forEach(s => {
-        document.getElementById('screen-'+s).classList.add('hidden');
-      });
-      document.getElementById('screen-'+name).classList.remove('hidden');
-    }
+  async function initGame(code, opponentUid) {
+    modal.classList.add('hidden');
+    boardEl.classList.remove('hidden');
+    gameId = code;
+    playerSymbol = user.uid < opponentUid ? 'X' : 'O';
+    turn = 'X';
+    board = Array(9).fill('');
+    const opponentSnap = await db.ref('users/'+opponentUid+'/displayName').get();
+    showScreen('home');
+    gameStatus.textContent = 'Playing with '+(opponentSnap.exists()?opponentSnap.val():'Opponent');
+    await db.ref('games/'+gameId).set({ board, turn });
+    listenGame();
+  }
 
-    // Leaderboard
-    async function loadLeaderboard() {
-      const snap = await db.ref('users').orderByChild('rating').limitToLast(20).get();
-      const list = [];
-      snap.forEach(child => list.push({ name: child.val().displayName || 'User', rating: child.val().rating, uid: child.key }));
-      list.sort((a,b) => b.rating - a.rating);
-      const ul = document.getElementById('leaderboard-list'); ul.innerHTML='';
-      list.forEach(u => {
-        const li = document.createElement('li');
-        li.className = 'flex justify-between p-2 bg-gray-800 rounded';
-        li.innerHTML = `<span>${u.name}</span><span>${u.rating}</span>`;
-        ul.appendChild(li);
-      });
-    }
+  function listenGame() {
+    db.ref('games/'+gameId).on('value', snap => {
+      const d = snap.val(); if (!d) return;
+      board = d.board; turn = d.turn;
+      renderBoard();
+      if (checkWin('X')||checkWin('O')||!board.includes('')) endGame();
+    });
+  }
 
-    // Matchmaking
-    function generateMatchCode() {
-      return Math.floor(10000000 + Math.random()*90000000).toString();
-    }
-    async function startMatching() {
-      modal.classList.remove('hidden');
-      let code = new URLSearchParams(window.location.search).get('match');
-      if (!code) {
-        code = generateMatchCode();
-        history.replaceState(null,'', '?match='+code);
-      }
-      const reqRef = db.ref('matchRequests/'+code);
-      const snap = await reqRef.get();
-      const data = snap.val();
-      if (!data) {
-        await reqRef.set({ uid: user.uid, time: Date.now() });
-        reqRef.on('value', async snap2 => {
-          const val = snap2.val();
-          if (val && val.uid !== user.uid) {
-            reqRef.off(); reqRef.remove();
-            initGame(code, val.uid);
-          }
-        });
-      } else if (data.uid !== user.uid) {
-        await reqRef.remove();
-        initGame(code, data.uid);
-      }
-    }
+  async function makeMove(i) {
+    if (board[i]||turn!==playerSymbol) return;
+    board[i] = playerSymbol;
+    turn = turn==='X'?'O':'X';
+    await db.ref('games/'+gameId).update({ board, turn });
+  }
 
-    async function initGame(code, opponentUid) {
-      modal.classList.add('hidden');
-      showScreen('home');
-      boardEl.classList.remove('hidden');
-      gameStatus.textContent = 'Playing with '+(await db.ref('users/'+opponentUid+'/displayName').get()).val();
-      gameId = code;
-      playerSymbol = user.uid < opponentUid ? 'X' : 'O';
-      turn = 'X';
-      board = Array(9).fill('');
-      await db.ref('games/'+gameId).set({ board, turn, players: { [user.uid]: true, [opponentUid]: true } });
-      listenGame();
-    }
+  function renderBoard() {
+    boardEl.innerHTML = '';
+    board.forEach((c,i) => {
+      const d = document.createElement('div');
+      d.className='w-20 h-20 bg-gray-700 flex items-center justify-center text-3xl font-bold cursor-pointer';
+      d.textContent = c;
+      if (c==='X') d.classList.add('text-red-500');
+      if (c==='O') d.classList.add('text-blue-500');
+      if (!c&&turn===playerSymbol) d.onclick = ()=>makeMove(i);
+      boardEl.appendChild(d);
+    });
+  }
 
-    function listenGame() {
-      db.ref('games/'+gameId).on('value', snap => {
-        const d = snap.val(); if (!d) return;
-        board = d.board; turn = d.turn;
-        renderBoard();
-        if (checkWin('X')||checkWin('O')||!board.includes('')) endGame();
-      });
-    }
+  function checkWin(p) {
+    const w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    return w.some(c=>c.every(i=>board[i]===p));
+  }
 
-    async function makeMove(i) {
-      if (board[i]||turn!==playerSymbol) return;
-      board[i]=playerSymbol;
-      turn = turn==='X'?'O':'X';
-      await db.ref('games/'+gameId).update({ board, turn });
-    }
-
-    function renderBoard() {
-      boardEl.innerHTML='';
-      board.forEach((c,i)=>{
-        const d=document.createElement('div');
-        d.className='w-20 h-20 bg-gray-700 flex items-center justify-center text-3xl font-bold cursor-pointer';
-        d.textContent=c;
-        if(c==='X') d.classList.add('text-red-500');
-        if(c==='O') d.classList.add('text-blue-500');
-        if(!c&&turn===playerSymbol) d.onclick=()=>makeMove(i);
-        boardEl.appendChild(d);
-      });
-    }
-
-    function checkWin(p) {
-      const w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-      return w.some(c=>c.every(i=>board[i]===p));
-    }
-
-    async function endGame() {
-      db.ref('games/'+gameId).off();
-      const xwin=checkWin('X'), owin=checkWin('O');
-      let msg='Draw'; if(xwin||owin) msg=( (xwin&&playerSymbol==='X')||(owin&&playerSymbol==='O') )?'You Win!':'You Lose!';
-      gameStatus.textContent=msg;
-      // update rating
-      const snap=await db.ref('users/'+user.uid+'/rating').get();
-      let r=snap.val();
-      if(msg==='You Win!') r+=12; else if(msg==='You Lose!') r-=4;
-      await db.ref('users/'+user.uid+'/rating').set(r);
-      ratingEl.textContent=r;
-      setTimeout(()=>{ boardEl.classList.add('hidden'); gameStatus.textContent=''; history.replaceState(null,'',' ');},4000);
-    }
-
-    // Deep link
-    function handleDeepLink() {
-      const code=new URLSearchParams(window.location.search).get('match');
-      if(code) startMatching();
-    }
-  </script>
-</body>
+  async function endGame() {
+    db.ref('games/'+gameId).off();
+    const xw=checkWin('X'), ow=checkWin('O');
+    let msg='Draw'; if(xw||ow) msg=((xw&&playerSymbol==='X')||(ow&&playerSymbol==='O'))?'You Win!':'You Lose!';
+    gameStatus.textContent = msg;
+    const snap = await db.ref('users/'+user.uid+'/rating').get(); let r=snap.val();
+    if(msg==='You Win!') r+=12; else if(msg==='You Lose!') r-=4;
+    await db.ref('users/'+user.uid+'/rating').set(r); ratingEl.textContent=r;
+    setTimeout(()=>{ boardEl.classList.add('hidden'); gameStatus.textContent=''; },4000);
+  }
+</script></body>
   </html>
