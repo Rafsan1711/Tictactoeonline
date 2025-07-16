@@ -1,82 +1,100 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-900 text-white">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tic Tac Toe Online</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 </head>
-<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col">
-  <!-- Auth Screen -->
-  <div id="auth-screen" class="flex-grow flex flex-col items-center justify-center">
-    <h1 class="text-4xl font-bold mb-6">Tic Tac Toe Online</h1>
-    <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded">Sign in with Google</button>
-  </div>  <!-- Main App -->  <div id="app" class="hidden flex-grow flex flex-col">
-    <!-- Top Bar -->
-    <div class="p-4 flex justify-between items-center border-b border-gray-700">
-      <div>
-        <span id="username" class="font-semibold"></span>
-        <span class="text-gray-400 ml-2">Rating: <span id="rating">0</span></span>
-      </div>
-      <div id="match-link" class="text-sm text-blue-400"></div>
-    </div><!-- Screens Container -->
-<div id="screens" class="flex-grow overflow-auto p-4">
-  <!-- Home Screen -->
-  <div id="screen-home" class="space-y-4">
-    <button onclick="startMatching()" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Play Online</button>
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
-      <div class="bg-gray-800 p-6 rounded shadow-lg text-center">
-        <p class="mb-4">Waiting for another player...</p>
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-white mx-auto"></div>
-      </div>
+<body class="min-h-screen flex flex-col">
+
+<!-- Auth Screen -->
+<div id="auth-screen" class="flex-grow flex flex-col items-center justify-center">
+  <h1 class="text-5xl font-extrabold mb-8 tracking-tight">Tic Tac Toe Online</h1>
+  <button onclick="signIn()" class="bg-blue-600 hover:bg-blue-700 transition px-8 py-3 rounded-lg font-semibold shadow">
+    Sign in with Google
+  </button>
+</div>
+
+<!-- Main App -->
+<div id="app" class="hidden flex-grow flex flex-col">
+  <!-- Top Bar -->
+  <div class="p-4 flex justify-between items-center border-b border-gray-700">
+    <div>
+      <span id="username" class="font-semibold"></span>
+      <span class="text-gray-400 ml-2">Rating: <span id="rating">0</span></span>
     </div>
-    <div id="board" class="grid grid-cols-3 gap-2 mt-6 w-72 mx-auto hidden"></div>
-    <p id="game-status" class="text-xl mt-4 font-bold text-center"></p>
+    <div id="match-link" class="text-sm text-blue-400"></div>
   </div>
 
-  <!-- Leaderboard Screen -->
-  <div id="screen-leaderboard" class="hidden">
-    <h2 class="text-2xl font-bold mb-4">Leaderboard</h2>
-    <div id="leaderboard-list" class="space-y-2"></div>
+  <!-- Screens Container -->
+  <div id="screens" class="flex-grow overflow-auto p-4">
+    <!-- Home Screen -->
+    <div id="screen-home" class="space-y-6">
+      <button onclick="startMatching()" class="w-full bg-green-600 hover:bg-green-700 transition px-6 py-3 rounded-lg font-semibold shadow">
+        Play Online
+      </button>
+
+      <!-- Waiting Modal -->
+      <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-lg text-center space-y-4">
+          <p class="text-lg">Waiting for another player...</p>
+          <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-white mx-auto"></div>
+        </div>
+      </div>
+
+      <!-- Game Board -->
+      <div id="board" class="grid grid-cols-3 gap-3 w-[280px] md:w-[360px] mx-auto hidden"></div>
+
+      <!-- Game Status -->
+      <p id="game-status" class="text-2xl mt-4 font-bold text-center"></p>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="screen-leaderboard" class="hidden">
+      <h2 class="text-3xl font-bold mb-6">Leaderboard</h2>
+      <div id="leaderboard-list" class="space-y-3"></div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="screen-settings" class="hidden">
+      <h2 class="text-3xl font-bold mb-6">Settings</h2>
+      <button onclick="signOut()" class="bg-red-600 hover:bg-red-700 transition px-6 py-3 rounded-lg font-semibold shadow">
+        Sign Out
+      </button>
+    </div>
   </div>
 
-  <!-- Settings Screen -->
-  <div id="screen-settings" class="hidden">
-    <h2 class="text-2xl font-bold mb-4">Settings</h2>
-    <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Sign Out</button>
+  <!-- Bottom Navigation -->
+  <div class="border-t border-gray-700 flex justify-around p-2">
+    <button onclick="showScreen('home')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded transition">🏠<br><span class="text-sm">Home</span></button>
+    <button onclick="showScreen('leaderboard')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded transition">⭐<br><span class="text-sm">Leaderboard</span></button>
+    <button onclick="showScreen('settings')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded transition">⚙️<br><span class="text-sm">Settings</span></button>
   </div>
 </div>
 
-<!-- Bottom Navigation -->
-<div class="border-t border-gray-700 flex justify-around p-2">
-  <button onclick="showScreen('home')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">🏠<br>Home</button>
-  <button onclick="showScreen('leaderboard')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⭐<br>Leaderboard</button>
-  <button onclick="showScreen('settings')" class="flex-grow text-center py-2 hover:bg-gray-800 rounded">⚙️<br>Settings</button>
-</div>
-
-  </div><script>
-  // Firebase Config
-    
+<script>
   const firebaseConfig = {
-  apiKey: "AIzaSyBqC69KDh1LqCw1DnxP5KWLP302WImS18M",
-  authDomain: "online-tic-tac-toe-726c2.firebaseapp.com",
-  databaseURL: "https://online-tic-tac-toe-726c2-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "online-tic-tac-toe-726c2",
-  storageBucket: "online-tic-tac-toe-726c2.firebasestorage.app",
-  messagingSenderId: "668299566909",
-  appId: "1:668299566909:web:d28ff050a0932452e96f54"
-};
-    
+    apiKey: "AIzaSyBqC69KDh1LqCw1DnxP5KWLP302WImS18M",
+    authDomain: "online-tic-tac-toe-726c2.firebaseapp.com",
+    databaseURL: "https://online-tic-tac-toe-726c2-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "online-tic-tac-toe-726c2",
+    storageBucket: "online-tic-tac-toe-726c2.appspot.com",
+    messagingSenderId: "668299566909",
+    appId: "1:668299566909:web:d28ff050a0932452e96f54"
+  };
 
-  
-  
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.database();
 
-  // UI Elements
   const authScreen = document.getElementById('auth-screen');
   const app = document.getElementById('app');
   const usernameEl = document.getElementById('username');
@@ -88,7 +106,6 @@
 
   let user, playerSymbol, gameId, turn, board = [];
 
-  // Auth
   auth.onAuthStateChanged(async u => {
     if (u) {
       user = u;
@@ -102,7 +119,6 @@
       ratingEl.textContent = rating;
       showScreen('home');
       loadLeaderboard();
-      // If URL has code, show link and auto-match
       const existingCode = new URLSearchParams(window.location.search).get('match');
       if (existingCode) {
         matchLinkEl.innerHTML = `Link: <code>?match=${existingCode}</code>`;
@@ -113,51 +129,46 @@
   function signIn() {
     auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
   }
+
   function signOut() {
     auth.signOut(); location.reload();
   }
 
   function showScreen(name) {
-    ['home','leaderboard','settings'].forEach(s => document.getElementById('screen-'+s).classList.add('hidden'));
-    document.getElementById('screen-'+name).classList.remove('hidden');
+    ['home', 'leaderboard', 'settings'].forEach(s => document.getElementById('screen-' + s).classList.add('hidden'));
+    document.getElementById('screen-' + name).classList.remove('hidden');
   }
 
-  // Leaderboard
   async function loadLeaderboard() {
     const snap = await db.ref('users').orderByChild('rating').limitToLast(20).get();
     const list = [];
     snap.forEach(child => list.push({ name: child.val().displayName || 'User', rating: child.val().rating }));
-    list.sort((a,b) => b.rating - a.rating);
+    list.sort((a, b) => b.rating - a.rating);
     const container = document.getElementById('leaderboard-list');
     container.innerHTML = '';
-    list.forEach((u,i) => {
+    list.forEach((u, i) => {
       const card = document.createElement('div');
       const colors = ['bg-yellow-500', 'bg-gray-300 text-gray-900', 'bg-yellow-700'];
-      const bg = i<3 ? colors[i] : 'bg-gray-800';
-      card.className = `flex justify-between p-4 rounded ${bg}`;
-      card.innerHTML = `<span>#${i+1}</span><span>${u.name}</span><span>${u.rating}</span>`;
+      const bg = i < 3 ? colors[i] : 'bg-gray-800';
+      card.className = `flex justify-between p-4 rounded-lg shadow ${bg}`;
+      card.innerHTML = `<span>#${i + 1}</span><span>${u.name}</span><span>${u.rating}</span>`;
       container.appendChild(card);
     });
   }
 
-  // Matchmaking (URL-based)
   async function startMatching() {
-    // generate or get code
     let code = new URLSearchParams(window.location.search).get('match');
     if (!code) {
-      code = Math.floor(10000000 + Math.random()*90000000).toString();
+      code = Math.floor(10000000 + Math.random() * 90000000).toString();
       history.replaceState(null, '', '?match=' + code);
     }
     matchLinkEl.innerHTML = `Link: <code>?match=${code}</code>`;
     modal.classList.remove('hidden');
 
     const slotRef = db.ref(`matchSlots/${code}`);
-    
-    // join slot
     const snap = await slotRef.get();
     if (!snap.exists()) {
       await slotRef.set({ player1: user.uid });
-      // listen for player2
       slotRef.on('value', async s2 => {
         const data = s2.val();
         if (data.player2 && data.player2 !== user.uid) {
@@ -167,7 +178,6 @@
       });
     } else if (snap.val().player1 !== user.uid) {
       await slotRef.update({ player2: user.uid });
-      // immediate start
       initGame(code, snap.val().player1);
       slotRef.remove();
     }
@@ -204,9 +214,9 @@
 
   function renderBoard() {
     boardEl.innerHTML = '';
-    board.forEach((c,i) => {
+    board.forEach((c, i) => {
       const d = document.createElement('div');
-      d.className = 'w-20 h-20 bg-gray-700 flex items-center justify-center text-3xl font-bold cursor-pointer';
+      d.className = 'w-24 h-24 md:w-28 md:h-28 bg-gray-700 flex items-center justify-center text-4xl font-extrabold cursor-pointer rounded transition hover:bg-gray-600';
       d.textContent = c;
       if (c === 'X') d.classList.add('text-red-500');
       if (c === 'O') d.classList.add('text-blue-500');
@@ -230,7 +240,10 @@
     if (msg === 'You Win!') r += 12; else if (msg === 'You Lose!') r -= 4;
     await db.ref('users/' + user.uid + '/rating').set(r);
     ratingEl.textContent = r;
-    setTimeout(() => { boardEl.classList.add('hidden'); gameStatus.textContent = ''; history.replaceState(null, '', ' '); }, 4000);
+    setTimeout(() => {
+      boardEl.classList.add('hidden'); gameStatus.textContent = ''; history.replaceState(null, '', ' ');
+    }, 4000);
   }
-</script></body>
+</script>
+</body>
 </html>
