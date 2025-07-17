@@ -29,7 +29,7 @@
       <span id="username" class="font-semibold"></span>
       <span class="text-gray-400 ml-2">Rating: <span id="rating">0</span></span>
     </div>
-    <div id="match-link" class="text-sm text-blue-400"></div>
+   
   </div>
 
   <!-- Screens Container -->
@@ -103,7 +103,7 @@
   const boardEl = document.getElementById('board');
   const gameStatus = document.getElementById('game-status');
   const modal = document.getElementById('modal');
-  const matchLinkEl = document.getElementById('match-link');
+  
 
   const leaderboardList = document.getElementById('leaderboard-list');
   const modalLeaderboard = document.getElementById('modal-leaderboard');
@@ -125,11 +125,6 @@
 
       loadLeaderboard();
       showScreen('home');
-
-      const existingCode = new URLSearchParams(window.location.search).get('match');
-      if (existingCode) {
-        matchLinkEl.innerHTML = `Link: <code>?match=${existingCode}</code>`;
-      }
     }
   });
 
