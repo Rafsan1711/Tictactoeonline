@@ -159,32 +159,48 @@
     });
   }
 
-  async function startMatching() {
-    let code = new URLSearchParams(window.location.search).get('match');
-    if (!code) {
-      code = Math.floor(10000000 + Math.random()*90000000).toString();
-      history.replaceState(null,'','?match='+code);
-    }
-    matchLinkEl.innerHTML = `Link: <code>?match=${code}</code>`;
-    modal.classList.remove('hidden');
+async function startMatching() {
+  modal.classList.remove('hidden');
+  const queueRef = db.ref('matchQueue');
 
-    const slotRef = db.ref(`matchSlots/${code}`);
-    const snap = await slotRef.get();
-    if (!snap.exists()) {
-      await slotRef.set({ player1: user.uid });
-      slotRef.on('value', async s2 => {
-        const d = s2.val();
-        if (d.player2 && d.player2!== user.uid) {
-          slotRef.off(); slotRef.remove();
-          initGame(code,d.player2);
-        }
-      });
-    } else if (snap.val().player1 !== user.uid) {
-      await slotRef.update({ player2: user.uid });
-      initGame(code,snap.val().player1);
-      slotRef.remove();
+  const snapshot = await queueRef.once('value');
+  const queue = snapshot.val() || {};
+
+  let matched = false;
+
+  for (let key in queue) {
+    if (queue[key] !== user.uid) {
+      matched = true;
+      const opponentUid = queue[key];
+      await queueRef.child(key).remove();
+      const gameId = Math.floor(10000000 + Math.random() * 90000000).toString();
+      await initGame(gameId, opponentUid);
+      await db.ref(`games/${gameId}/players`).set({ X: user.uid, O: opponentUid });
+      break;
     }
   }
+
+  if (!matched) {
+    const slotKey = db.ref().push().key;
+    await queueRef.child(slotKey).set(user.uid);
+
+    const listener = queueRef.on('value', async snap => {
+      const updatedQueue = snap.val() || {};
+      for (let key in updatedQueue) {
+        if (updatedQueue[key] !== user.uid) {
+          queueRef.off('value', listener);
+          await queueRef.child(key).remove();
+          await queueRef.child(slotKey).remove();
+          const gameId = Math.floor(10000000 + Math.random() * 90000000).toString();
+          await initGame(gameId, updatedQueue[key]);
+          await db.ref(`games/${gameId}/players`).set({ X: user.uid, O: updatedQueue[key] });
+          return;
+        }
+      }
+    });
+  }
+}
+
 
   async function initGame(code, opponentUid) {
     modal.classList.add('hidden');
