@@ -29,7 +29,6 @@
       <span id="username" class="font-semibold"></span>
       <span class="text-gray-400 ml-2">Rating: <span id="rating">0</span></span>
     </div>
-    <div id="match-link" class="text-sm text-blue-400"></div>
   </div>
 
   <!-- Screens Container -->
@@ -80,6 +79,7 @@
 </div>
 
 <script>
+  // Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyBqC69KDh1LqCw1DnxP5KWLP302WImS18M",
     authDomain: "online-tic-tac-toe-726c2.firebaseapp.com",
@@ -94,6 +94,7 @@
   const auth = firebase.auth();
   const db = firebase.database();
 
+  // UI Elements
   const authScreen = document.getElementById('auth-screen');
   const app = document.getElementById('app');
   const usernameEl = document.getElementById('username');
@@ -101,7 +102,6 @@
   const boardEl = document.getElementById('board');
   const gameStatus = document.getElementById('game-status');
   const modal = document.getElementById('modal');
-  const matchLinkEl = document.getElementById('match-link');
 
   const leaderboardList = document.getElementById('leaderboard-list');
   const modalLeaderboard = document.getElementById('modal-leaderboard');
@@ -152,37 +152,30 @@
     });
   }
 
+  // Auto-matchmaking with proper sync
   async function startMatching() {
     modal.classList.remove('hidden');
-    const queueRef = db.ref('matchQueue');
-    const snap = await queueRef.limitToFirst(1).get();
+    const slotCode = Math.floor(10000000 + Math.random()*90000000).toString();
+    const slotRef = db.ref(`matchSlots/${slotCode}`);
+    const snap = await slotRef.get();
 
-    if (snap.exists()) {
-      const opponent = Object.entries(snap.val())[0];
-      const key = opponent[0];
-      const opponentUid = opponent[1].uid;
-      if (opponentUid === user.uid) return;
-      gameId = 'game_' + Date.now();
-      await db.ref('games/' + gameId).set({ board: Array(9).fill(''), turn: 'X' });
-      await queueRef.child(key).remove();
-      initGame(gameId, opponentUid);
-    } else {
-      const newRef = queueRef.push();
-      await newRef.set({ uid: user.uid, timestamp: Date.now() });
-      newRef.onDisconnect().remove();
-      newRef.on('child_removed', () => {
-        // Opponent found, already handled
-      });
-
-      queueRef.on('child_removed', async (snap2) => {
-        const data = snap2.val();
-        if (data.uid !== user.uid) {
-          gameId = 'game_' + Date.now();
-          await db.ref('games/' + gameId).set({ board: Array(9).fill(''), turn: 'X' });
-          initGame(gameId, data.uid);
-          queueRef.off(); // stop listening after match
+    if (!snap.exists()) {
+      // I'm first
+      await slotRef.set({ player1: user.uid });
+      slotRef.on('value', s2 => {
+        const d = s2.val();
+        if (d && d.player2) {
+          slotRef.off();
+          slotRef.remove();
+          initGame(slotCode, d.player2);
         }
       });
+    } else if (snap.val().player1 !== user.uid) {
+      // I'm second
+      await slotRef.update({ player2: user.uid });
+      slotRef.off();
+      initGame(slotCode, snap.val().player1);
+      slotRef.remove();
     }
   }
 
@@ -190,10 +183,19 @@
     modal.classList.add('hidden');
     boardEl.classList.remove('hidden');
     gameId = code;
+
     const oppSnap = await db.ref('users/' + opponentUid + '/displayName').get();
     gameStatus.textContent = 'Playing with ' + (oppSnap.exists() ? oppSnap.val() : 'Opponent');
+
     playerSymbol = user.uid < opponentUid ? 'X' : 'O';
-    turn = 'X'; board = Array(9).fill('');
+    turn = 'X';
+    board = Array(9).fill('');
+
+    // Only X initializes board in DB
+    if (playerSymbol === 'X') {
+      await db.ref('games/' + gameId).set({ board, turn });
+    }
+
     listenGame();
   }
 
@@ -207,7 +209,8 @@
 
   async function makeMove(i) {
     if (board[i] || turn !== playerSymbol) return;
-    board[i] = playerSymbol; turn = turn === 'X' ? 'O' : 'X';
+    board[i] = playerSymbol;
+    turn = turn === 'X' ? 'O' : 'X';
     await db.ref('games/' + gameId).update({ board, turn });
   }
 
@@ -235,10 +238,12 @@
     let msg = 'Draw';
     if (xw || ow) msg = ((xw && playerSymbol === 'X') || (ow && playerSymbol === 'O')) ? 'You Win!' : 'You Lose!';
     gameStatus.textContent = msg;
+
     const snap = await db.ref('users/' + user.uid + '/rating').get(); let r = snap.val();
     if (msg === 'You Win!') r += 12; else if (msg === 'You Lose!') r -= 4;
     await db.ref('users/' + user.uid + '/rating').set(r);
     ratingEl.textContent = r;
+
     setTimeout(() => {
       boardEl.classList.add('hidden');
       gameStatus.textContent = '';
