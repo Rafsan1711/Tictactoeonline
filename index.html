@@ -29,7 +29,7 @@
       <span id="username" class="font-semibold"></span>
       <span class="text-gray-400 ml-2">Rating: <span id="rating">0</span></span>
     </div>
-   
+    <div id="match-link" class="text-sm text-blue-400"></div>
   </div>
 
   <!-- Screens Container -->
@@ -80,7 +80,6 @@
 </div>
 
 <script>
-  // Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyBqC69KDh1LqCw1DnxP5KWLP302WImS18M",
     authDomain: "online-tic-tac-toe-726c2.firebaseapp.com",
@@ -95,7 +94,6 @@
   const auth = firebase.auth();
   const db = firebase.database();
 
-  // UI Elements
   const authScreen = document.getElementById('auth-screen');
   const app = document.getElementById('app');
   const usernameEl = document.getElementById('username');
@@ -103,7 +101,7 @@
   const boardEl = document.getElementById('board');
   const gameStatus = document.getElementById('game-status');
   const modal = document.getElementById('modal');
-  
+  const matchLinkEl = document.getElementById('match-link');
 
   const leaderboardList = document.getElementById('leaderboard-list');
   const modalLeaderboard = document.getElementById('modal-leaderboard');
@@ -154,104 +152,97 @@
     });
   }
 
-async function startMatching() {
-  modal.classList.remove('hidden');
-  const queueRef = db.ref('matchQueue');
+  async function startMatching() {
+    modal.classList.remove('hidden');
+    const queueRef = db.ref('matchQueue');
+    const snap = await queueRef.limitToFirst(1).get();
 
-  const snapshot = await queueRef.once('value');
-  const queue = snapshot.val() || {};
-
-  let matched = false;
-
-  for (let key in queue) {
-    if (queue[key] !== user.uid) {
-      matched = true;
-      const opponentUid = queue[key];
+    if (snap.exists()) {
+      const opponent = Object.entries(snap.val())[0];
+      const key = opponent[0];
+      const opponentUid = opponent[1].uid;
+      if (opponentUid === user.uid) return;
+      gameId = 'game_' + Date.now();
+      await db.ref('games/' + gameId).set({ board: Array(9).fill(''), turn: 'X' });
       await queueRef.child(key).remove();
-      const gameId = Math.floor(10000000 + Math.random() * 90000000).toString();
-      await initGame(gameId, opponentUid);
-      await db.ref(`games/${gameId}/players`).set({ X: user.uid, O: opponentUid });
-      break;
+      initGame(gameId, opponentUid);
+    } else {
+      const newRef = queueRef.push();
+      await newRef.set({ uid: user.uid, timestamp: Date.now() });
+      newRef.onDisconnect().remove();
+      newRef.on('child_removed', () => {
+        // Opponent found, already handled
+      });
+
+      queueRef.on('child_removed', async (snap2) => {
+        const data = snap2.val();
+        if (data.uid !== user.uid) {
+          gameId = 'game_' + Date.now();
+          await db.ref('games/' + gameId).set({ board: Array(9).fill(''), turn: 'X' });
+          initGame(gameId, data.uid);
+          queueRef.off(); // stop listening after match
+        }
+      });
     }
   }
-
-  if (!matched) {
-    const slotKey = db.ref().push().key;
-    await queueRef.child(slotKey).set(user.uid);
-
-    const listener = queueRef.on('value', async snap => {
-      const updatedQueue = snap.val() || {};
-      for (let key in updatedQueue) {
-        if (updatedQueue[key] !== user.uid) {
-          queueRef.off('value', listener);
-          await queueRef.child(key).remove();
-          await queueRef.child(slotKey).remove();
-          const gameId = Math.floor(10000000 + Math.random() * 90000000).toString();
-          await initGame(gameId, updatedQueue[key]);
-          await db.ref(`games/${gameId}/players`).set({ X: user.uid, O: updatedQueue[key] });
-          return;
-        }
-      }
-    });
-  }
-}
-
 
   async function initGame(code, opponentUid) {
     modal.classList.add('hidden');
     boardEl.classList.remove('hidden');
     gameId = code;
-    const oppSnap = await db.ref('users/'+opponentUid+'/displayName').get();
-    gameStatus.textContent = 'Playing with '+(oppSnap.exists()? oppSnap.val():'Opponent');
-    playerSymbol = user.uid < opponentUid ? 'X':'O';
+    const oppSnap = await db.ref('users/' + opponentUid + '/displayName').get();
+    gameStatus.textContent = 'Playing with ' + (oppSnap.exists() ? oppSnap.val() : 'Opponent');
+    playerSymbol = user.uid < opponentUid ? 'X' : 'O';
     turn = 'X'; board = Array(9).fill('');
-    await db.ref('games/'+gameId).set({ board, turn });
     listenGame();
   }
 
   function listenGame() {
-    db.ref('games/'+gameId).on('value', snap => {
-      const d = snap.val(); if(!d) return;
+    db.ref('games/' + gameId).on('value', snap => {
+      const d = snap.val(); if (!d) return;
       board = d.board; turn = d.turn; renderBoard();
-      if (checkWin('X')|| checkWin('O')|| !board.includes('')) endGame();
+      if (checkWin('X') || checkWin('O') || !board.includes('')) endGame();
     });
   }
 
   async function makeMove(i) {
-    if (board[i]|| turn!==playerSymbol) return;
-    board[i]=playerSymbol; turn = turn==='X'?'O':'X';
-    await db.ref('games/'+gameId).update({ board, turn });
+    if (board[i] || turn !== playerSymbol) return;
+    board[i] = playerSymbol; turn = turn === 'X' ? 'O' : 'X';
+    await db.ref('games/' + gameId).update({ board, turn });
   }
 
   function renderBoard() {
-    boardEl.innerHTML='';
-    board.forEach((c,i)=>{
-      const d=document.createElement('div');
-      d.className='w-24 h-24 md:w-28 md:h-28 bg-gray-700 flex items-center justify-center text-4xl font-extrabold cursor-pointer rounded transition hover:bg-gray-600';
-      d.textContent=c;
-      if(c==='X') d.classList.add('text-red-500');
-      if(c==='O') d.classList.add('text-blue-500');
-      if(!c && turn===playerSymbol) d.onclick=()=>makeMove(i);
+    boardEl.innerHTML = '';
+    board.forEach((c, i) => {
+      const d = document.createElement('div');
+      d.className = 'w-24 h-24 md:w-28 md:h-28 bg-gray-700 flex items-center justify-center text-4xl font-extrabold cursor-pointer rounded transition hover:bg-gray-600';
+      d.textContent = c;
+      if (c === 'X') d.classList.add('text-red-500');
+      if (c === 'O') d.classList.add('text-blue-500');
+      if (!c && turn === playerSymbol) d.onclick = () => makeMove(i);
       boardEl.appendChild(d);
     });
   }
 
   function checkWin(p) {
     return [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
-      .some(c=>c.every(i=>board[i]===p));
+      .some(c => c.every(i => board[i] === p));
   }
 
   async function endGame() {
-    db.ref('games/'+gameId).off();
-    const xw=checkWin('X'), ow=checkWin('O');
-    let msg='Draw';
-    if(xw||ow) msg=((xw&&playerSymbol==='X')||(ow&&playerSymbol==='O'))?'You Win!':'You Lose!';
-    gameStatus.textContent=msg;
-    const snap=await db.ref('users/'+user.uid+'/rating').get(); let r=snap.val();
-    if(msg==='You Win!') r+=12; else if(msg==='You Lose!') r-=4;
-    await db.ref('users/'+user.uid+'/rating').set(r);
-    ratingEl.textContent=r;
-    setTimeout(()=>{ boardEl.classList.add('hidden'); gameStatus.textContent=''; history.replaceState(null,'',' '); },4000);
+    db.ref('games/' + gameId).off();
+    const xw = checkWin('X'), ow = checkWin('O');
+    let msg = 'Draw';
+    if (xw || ow) msg = ((xw && playerSymbol === 'X') || (ow && playerSymbol === 'O')) ? 'You Win!' : 'You Lose!';
+    gameStatus.textContent = msg;
+    const snap = await db.ref('users/' + user.uid + '/rating').get(); let r = snap.val();
+    if (msg === 'You Win!') r += 12; else if (msg === 'You Lose!') r -= 4;
+    await db.ref('users/' + user.uid + '/rating').set(r);
+    ratingEl.textContent = r;
+    setTimeout(() => {
+      boardEl.classList.add('hidden');
+      gameStatus.textContent = '';
+    }, 4000);
   }
 </script>
 </body>
